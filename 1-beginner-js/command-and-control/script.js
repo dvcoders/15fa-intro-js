@@ -1,98 +1,81 @@
-var textBox = document.querySelector('.control input');
-var ship = document.querySelector('.ship');
-var button = document.querySelector('.control button');
-
-var commandEntered = function(event) {
-  event.preventDefault();
-
-  var text = textBox.value;
-
-  var words = text.split(' ');
-
-  var firstWord = words[0];
-  var secondWord = words[1];
-
-  if (firstWord === 'launch') {
-    launch();
-  } else if (firstWord === 'go') {
-    go(secondWord);
-  } else if(firstWord === 'rotate') {
-    rotate(secondWord);
-  } else {
-    wrongCommand();
-  }
-}
+var button = $('.control button');
+var textBox = $('.control input');
+var ship = $('.ship');
 
 var isLaunched = false;
 var isDestroyed = false;
 
-button.addEventListener('click', commandEntered);
-
-
-function launch() {
-  if (isDestroyed) {
+var launch = function () {
+  if (isLaunched || isDestroyed) {
     return;
   }
 
   isLaunched = true;
+  ship.attr('src', 'resources/spaceship.png');
+};
 
-  ship.src = 'resources/spaceship.png';
-}
-
-var go = function(direction) {
-  if (!isLaunched) {
-    return wrongCommand();
+function go(direction) {
+  if (!isLaunched || isDestroyed) {
+    return;
   }
 
   var directions = {
-    'left': [-80, 0],
-    'right': [80, 0],
     'up': [0, 80],
-    'down': [0, -80]
+    'down': [0, -80],
+    'left': [-80, 0],
+    'right': [80, 0]
   };
 
   var displacement = directions[direction];
 
-  if (displacement === undefined) {
+  if (!displacement) {
     wrongCommand();
+    return;
   }
 
-  var shipLeftText = ship.style.left;
-  var shipBottomText = ship.style.bottom;
-
-  var shipLeftPosition = parseInt(shipLeftText);
-  var shipBottomPosition = parseInt(shipBottomText);
-
-  var properties = {
-    'left': shipLeftPosition + displacement[0] + 'px',
-    'bottom': shipBottomPosition + displacement[1] + 'px'
-  };
-  ship.style.left = properties['left']; // properties.left
-  ship.style.bottom = properties['bottom'];
+  ship.css('left', parseInt(ship.css('left')) + displacement[0]);
+  ship.css('bottom', parseInt(ship.css('bottom')) + displacement[1]);
 }
 
-var rotate = function(amount) {
-  if (!isLaunched) {
-    wrongCommand();
+function rotate(degrees) {
+  if (!isLaunched || isDestroyed) {
+    return;
   }
 
-  var degrees = parseInt(amount);
+  var degNum = parseFloat(degrees);
 
-  ship.style.transition = '1s ease-in';
-  ship.style.transform = 'rotate(' + degrees + 'deg)'; // rotate(80deg)
-};
+  if (isNaN(degNum)) {
+    wrongCommand();
+    return;
+  }
+
+  ship.css('transform', 'rotate(' + degrees + 'deg)');
+}
+
+button.on('click', function (event) {
+  event.preventDefault();
+
+  var text = textBox.val();
+  var words = text.split(' ');
+
+  switch (words[0]) {
+    case 'launch':
+      launch();
+      break;
+    case 'go':
+      go(words[1]);
+      break;
+    case 'rotate':
+      rotate(words[1]);
+      break;
+    default:
+      wrongCommand();
+  }
+
+  textBox.val('');
+});
 
 function wrongCommand() {
   isDestroyed = true;
-  isLaunched = false;
-  ship.src = 'resources/explode.png';
+  ship.attr('src', 'resources/explode.png');
 }
-
-
-
-
-
-
-
-
-

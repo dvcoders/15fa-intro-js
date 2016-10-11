@@ -49,6 +49,7 @@ button:active {
 
 .container .ship {
   position: relative;
+  transition: all ease-in-out 500ms;
 }
 
 .control button, .control input {
